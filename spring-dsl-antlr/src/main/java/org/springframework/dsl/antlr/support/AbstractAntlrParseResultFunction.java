@@ -27,6 +27,7 @@ import org.springframework.dsl.domain.DocumentSymbol;
 import org.springframework.dsl.domain.Hover;
 import org.springframework.dsl.domain.Position;
 import org.springframework.dsl.service.reconcile.ReconcileProblem;
+import org.springframework.dsl.service.symbol.SymbolizeInfo;
 import org.springframework.dsl.support.DslUtils;
 import org.springframework.dsl.symboltable.SymbolTable;
 
@@ -82,10 +83,15 @@ public abstract class AbstractAntlrParseResultFunction<T, L extends Lexer, P ext
 					return AbstractAntlrParseResultFunction.this.getCompletionItems(shared, document, position);
 				}
 
-	        	@Override
-				public Flux<DocumentSymbol> getDocumentSymbols() {
-					return AbstractAntlrParseResultFunction.this.getDocumentSymbols(shared, document);
-	        	}
+//	        	@Override
+//				public Flux<DocumentSymbol> getDocumentSymbols() {
+//					return AbstractAntlrParseResultFunction.this.getDocumentSymbols(shared, document);
+//	        	}
+
+				@Override
+				public SymbolizeInfo getSymbolizeInfo() {
+					return AbstractAntlrParseResultFunction.this.getSymbolizeInfo(shared, document);
+				}
 
 				@Override
 				public Mono<Hover> getHover(Position position) {
@@ -115,19 +121,27 @@ public abstract class AbstractAntlrParseResultFunction<T, L extends Lexer, P ext
 		return Flux.empty();
 	}
 
-	protected Flux<DocumentSymbol> getDocumentSymbols(Mono<AntlrParseResult<T>> shared, Document document) {
-		return shared.flatMapMany(r -> Flux.from(r.getDocumentSymbols()));
+//	protected Flux<DocumentSymbol> getDocumentSymbols(Mono<AntlrParseResult<T>> shared, Document document) {
+//		return shared.flatMapMany(r -> Flux.from(r.getDocumentSymbols()));
+//	}
+//
+//	protected Mono<Hover> getHover(Mono<AntlrParseResult<T>> shared, Document document, Position position) {
+//		return getDocumentSymbols(shared, document)
+//			.filter(s -> DslUtils.isPositionInRange(position, s.getRange()))
+//			.map(s -> Hover.hover()
+//				.contents()
+//					.value(s.getName())
+//					.and()
+//				.range(s.getRange())
+//				.build())
+//			.next();
+//	}
+
+	protected SymbolizeInfo getSymbolizeInfo(Mono<AntlrParseResult<T>> shared, Document document) {
+		return null;
 	}
 
 	protected Mono<Hover> getHover(Mono<AntlrParseResult<T>> shared, Document document, Position position) {
-		return getDocumentSymbols(shared, document)
-			.filter(s -> DslUtils.isPositionInRange(position, s.getRange()))
-			.map(s -> Hover.hover()
-				.contents()
-					.value(s.getName())
-					.and()
-				.range(s.getRange())
-				.build())
-			.next();
+		return Mono.empty();
 	}
 }

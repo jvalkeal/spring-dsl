@@ -26,6 +26,7 @@ import org.springframework.dsl.domain.DocumentSymbol;
 import org.springframework.dsl.domain.Range;
 import org.springframework.dsl.domain.SymbolKind;
 import org.springframework.dsl.service.reconcile.ReconcileProblem;
+import org.springframework.dsl.service.symbol.SymbolizeInfo;
 import org.springframework.dsl.symboltable.SymbolTable;
 import org.springframework.dsl.symboltable.model.ClassSymbol;
 import org.springframework.dsl.symboltable.model.FieldSymbol;
@@ -105,15 +106,20 @@ public class Test2Visitor extends Test2GrammarBaseVisitor<AntlrParseResult<Objec
 				return Flux.fromIterable(errors);
 			}
 
+//			@Override
+//			public Flux<DocumentSymbol> getDocumentSymbols() {
+//				return getSymbolTable()
+//					.flatMapMany(st -> Flux.fromIterable(st.getAllSymbols()))
+//					.map(s -> DocumentSymbol.documentSymbol()
+//							.name(s.getName())
+//							.kind(SymbolKind.String)
+//							.range(s.getRange())
+//							.build());
+//			}
+
 			@Override
-			public Flux<DocumentSymbol> getDocumentSymbols() {
-				return getSymbolTable()
-					.flatMapMany(st -> Flux.fromIterable(st.getAllSymbols()))
-					.map(s -> DocumentSymbol.documentSymbol()
-							.name(s.getName())
-							.kind(SymbolKind.String)
-							.range(s.getRange())
-							.build());
+			public SymbolizeInfo getSymbolizeInfo() {
+				return null;
 			}
 		};
 	}

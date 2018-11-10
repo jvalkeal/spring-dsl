@@ -23,6 +23,7 @@ import org.springframework.dsl.antlr.AntlrParseService;
 import org.springframework.dsl.document.Document;
 import org.springframework.dsl.domain.DocumentSymbol;
 import org.springframework.dsl.model.LanguageId;
+import org.springframework.dsl.service.symbol.SymbolizeInfo;
 import org.springframework.dsl.service.symbol.Symbolizer;
 
 import reactor.core.publisher.Flux;
@@ -63,9 +64,23 @@ public abstract class AbstractAntlrSymbolizer<T> extends AbstractAntlrDslService
 	}
 
 	@Override
-	public Flux<DocumentSymbol> symbolize(Document document) {
-		return getAntlrParseService().parse(document, getAntlrParseResultFunction())
-				.map(r -> r.getDocumentSymbols())
-				.flatMapMany(r -> r.cache());
+	public SymbolizeInfo symbolize(Document document) {
+//		return SymbolizeInfo.ofDocumentSymbol(getAntlrParseService()
+//				.parse(document, getAntlrParseResultFunction())
+//				.map(r -> r.getDocumentSymbols())
+//				.flatMapMany(r -> r.cache()));
+
+		AntlrParseService<T> x1 = getAntlrParseService();
+		Mono<AntlrParseResult<T>> x2 = x1.parse(document, getAntlrParseResultFunction());
+		Mono<SymbolizeInfo> map = x2.map(x -> x.getSymbolizeInfo());
+
+
+		getAntlrParseService()
+			.parse(document, getAntlrParseResultFunction())
+			.map(r -> r.getSymbolizeInfo())
+			;
+
+
+		return null;
 	}
 }

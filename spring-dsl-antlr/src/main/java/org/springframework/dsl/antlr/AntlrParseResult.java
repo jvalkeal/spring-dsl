@@ -22,6 +22,7 @@ import org.springframework.dsl.domain.DocumentSymbol;
 import org.springframework.dsl.domain.Hover;
 import org.springframework.dsl.domain.Position;
 import org.springframework.dsl.service.reconcile.ReconcileProblem;
+import org.springframework.dsl.service.symbol.SymbolizeInfo;
 import org.springframework.dsl.symboltable.SymbolTable;
 
 import reactor.core.publisher.Flux;
@@ -87,13 +88,20 @@ public interface AntlrParseResult<T> {
 		return Mono.empty();
 	}
 
-	/**
-	 * Gets the document symbols.
-	 *
-	 * @return the document symbols
-	 */
-	default Flux<DocumentSymbol> getDocumentSymbols() {
-		return Flux.empty();
+//	/**
+//	 * Gets the document symbols.
+//	 *
+//	 * @return the document symbols
+//	 */
+//	default Flux<DocumentSymbol> getDocumentSymbols() {
+//		return Flux.empty();
+//	}
+
+//	default Mono<SymbolizeInfo> getSymbolizeInfo() {
+//		return Mono.empty();
+//	}
+	default SymbolizeInfo getSymbolizeInfo() {
+		return null;
 	}
 
 	/**
