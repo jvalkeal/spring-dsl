@@ -23,10 +23,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dsl.document.linetracker.DefaultLineTracker;
 import org.springframework.dsl.document.linetracker.LineTracker;
 import org.springframework.dsl.document.linetracker.Region;
-import org.springframework.dsl.domain.DidChangeTextDocumentParams;
+// import org.springframework.dsl.domain.DidChangeTextDocumentParams;
 import org.springframework.dsl.domain.Position;
 import org.springframework.dsl.domain.Range;
-import org.springframework.dsl.domain.TextDocumentContentChangeEvent;
+// import org.springframework.dsl.domain.TextDocumentContentChangeEvent;
 import org.springframework.dsl.domain.TextDocumentIdentifier;
 import org.springframework.dsl.model.LanguageId;
 
@@ -103,6 +103,10 @@ public class TextDocument implements Document {
 	public String content() {
 		return getText().toString();
 	}
+	@Override
+	public DocumentText contentx() {
+		return new DocumentText(text);
+	}
 
 	@Override
 	public int caret(Position position) {
@@ -129,18 +133,18 @@ public class TextDocument implements Document {
 		this.lineTracker.set(content);
 	}
 
-	public synchronized void apply(DidChangeTextDocumentParams params) {
-		int newVersion = params.getTextDocument().getVersion();
-		if (version < newVersion) {
-			log.trace("Number of changes {}", params.getContentChanges().size());
-			for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
-				apply(change);
-			}
-			this.version = newVersion;
-		} else {
-			log.warn("Change event with bad version ignored, current {} new {}: {}", version, newVersion, params);
-		}
-	}
+	// public synchronized void apply(DidChangeTextDocumentParams params) {
+	// 	int newVersion = params.getTextDocument().getVersion();
+	// 	if (version < newVersion) {
+	// 		log.trace("Number of changes {}", params.getContentChanges().size());
+	// 		for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
+	// 			apply(change);
+	// 		}
+	// 		this.version = newVersion;
+	// 	} else {
+	// 		log.warn("Change event with bad version ignored, current {} new {}: {}", version, newVersion, params);
+	// 	}
+	// }
 
 	/**
 	 * Convert a simple offset+length pair into a {@link Range}. This is a method on
@@ -185,12 +189,22 @@ public class TextDocument implements Document {
 			throw new BadLocationException("Error processing subtext", e);
 		}
 	}
+	@Override
+	public DocumentText contentx(int start, int length) {
+		return new DocumentText(text.subtext(start, start + length));
+	}
 
 	@Override
 	public String content(Range range) {
 		int startOffset = toOffset(range.getStart());
 		int endOffset = toOffset(range.getEnd());
 		return content(startOffset, endOffset - startOffset);
+	}
+	@Override
+	public DocumentText contentx(Range range) {
+		int startOffset = toOffset(range.getStart());
+		int endOffset = toOffset(range.getEnd());
+		return contentx(startOffset, endOffset - startOffset);
 	}
 
 	@Override
@@ -286,19 +300,19 @@ public class TextDocument implements Document {
 		return null;
 	}
 
-	private void apply(TextDocumentContentChangeEvent change) {
-		log.trace("Old content before apply is '{}'", content());
-		Range range = change.getRange();
-		if (range == null) {
-			//full sync mode
-			setText(change.getText());
-		} else {
-			int start = toOffset(range.getStart());
-			int end = toOffset(range.getEnd());
-			replace(start, end-start, change.getText());
-		}
-		log.trace("New content after apply is '{}'", content());
-	}
+	// private void apply(TextDocumentContentChangeEvent change) {
+	// 	log.trace("Old content before apply is '{}'", content());
+	// 	Range range = change.getRange();
+	// 	if (range == null) {
+	// 		//full sync mode
+	// 		setText(change.getText());
+	// 	} else {
+	// 		int start = toOffset(range.getStart());
+	// 		int end = toOffset(range.getEnd());
+	// 		replace(start, end-start, change.getText());
+	// 	}
+	// 	log.trace("New content after apply is '{}'", content());
+	// }
 
 	private int startOfLine(int line) {
 		Region region = lineTracker.getLineInformation(line);

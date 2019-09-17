@@ -58,6 +58,7 @@ public interface Document {
 	 * @return the content
 	 */
 	String content();
+	DocumentText contentx();
 
 	/**
 	 * Gets a length of a document.
@@ -116,6 +117,7 @@ public interface Document {
 	 * @return the string
 	 */
 	String content(int start, int length);
+	DocumentText contentx(int start, int length);
 
 	/**
 	 * Get a content from a range.
@@ -124,6 +126,7 @@ public interface Document {
 	 * @return the string
 	 */
 	String content(Range range);
+	DocumentText contentx(Range range);
 
 	/**
 	 * Gets a position from a given offset.
