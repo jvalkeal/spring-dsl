@@ -35,7 +35,8 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 
 	@Override
 	public DocumentText getLineDelimiter(int line) {
-		return null;
+		Node node = nodeByLine(line);
+		return node.delimiter == NO_DELIM ? null : new DocumentText(node.delimiter);
 	}
 
 	@Override
@@ -120,7 +121,64 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 
 	@Override
 	public Region getLineInformation(int line) {
-		return null;
+		try {
+			// Inline nodeByLine start
+			int remaining = line;
+			int offset = 0;
+			Node node = fRoot;
+
+			while (true) {
+				if (node == null) {
+					fail(line);
+				}
+
+				if (remaining == node.line) {
+					offset += node.offset;
+					break;
+				}
+				if (remaining < node.line) {
+					node = node.left;
+				} else {
+					remaining -= node.line + 1;
+					offset += node.offset + node.length;
+					node = node.right;
+				}
+			}
+			// Inline nodeByLine end
+			return new DefaultRegion(offset, node.pureLength());
+		} catch (BadLocationException x) {
+			if (line > 0 && line == getNumberOfLines()) {
+				line = line - 1;
+				// Inline nodeByLine start
+				int remaining = line;
+				int offset = 0;
+				Node node = fRoot;
+
+				while (true) {
+					if (node == null) {
+						fail(line);
+					}
+
+					if (remaining == node.line) {
+						offset += node.offset;
+						break;
+					}
+					if (remaining < node.line) {
+						node = node.left;
+					} else {
+						remaining -= node.line + 1;
+						offset += node.offset + node.length;
+						node = node.right;
+					}
+				}
+				Node last = node;
+				// Inline nodeByLine end
+				if (last.length > 0) {
+					return new DefaultRegion(offset + last.length, 0);
+				}
+			}
+			throw x;
+		}
 	}
 
 	@Override
@@ -1137,13 +1195,12 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 		}
 	}
 
-		/**
-	 * Combines the information of the occurrence of a line delimiter. <code>delimiterIndex</code>
-	 * is the index where a line delimiter starts, whereas <code>delimiterLength</code>,
-	 * indicates the length of the delimiter.
+	/**
+	 * Combines the information of the occurrence of a line delimiter.
+	 * <code>delimiterIndex</code> is the index where a line delimiter starts,
+	 * whereas <code>delimiterLength</code>, indicates the length of the delimiter.
 	 */
-	protected static class DelimiterInfo {
-
+	private static class DelimiterInfo {
 		public int delimiterIndex;
 		public int delimiterLength;
 		public String delimiter;

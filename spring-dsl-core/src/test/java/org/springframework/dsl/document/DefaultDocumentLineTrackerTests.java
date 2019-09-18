@@ -32,11 +32,24 @@ public class DefaultDocumentLineTrackerTests {
 		tracker.replace(0, 0, new DocumentText("1"));
 		assertThat(tracker.getNumberOfLines()).isEqualTo(1);
 		assertThat(tracker.getLineLength(0)).isEqualTo(1);
+		assertThat(tracker.getLineDelimiter(0)).isNull();
 
 		tracker.replace(0, 1, new DocumentText("1\n2"));
 		assertThat(tracker.getNumberOfLines()).isEqualTo(2);
 		assertThat(tracker.getLineLength(0)).isEqualTo(2);
+		assertThat(tracker.getLineDelimiter(0)).isNotNull();
+		assertThat(tracker.getLineDelimiter(0).toString()).isEqualTo("\n");
 		assertThat(tracker.getLineLength(1)).isEqualTo(1);
+		assertThat(tracker.getLineDelimiter(1)).isNull();
+
+		tracker.replace(0, 3, new DocumentText("1\n2\n3"));
+		assertThat(tracker.getNumberOfLines()).isEqualTo(3);
+		assertThat(tracker.getLineLength(0)).isEqualTo(2);
+		assertThat(tracker.getLineDelimiter(0).toString()).isEqualTo("\n");
+		assertThat(tracker.getLineLength(1)).isEqualTo(2);
+		assertThat(tracker.getLineDelimiter(1).toString()).isEqualTo("\n");
+		assertThat(tracker.getLineLength(2)).isEqualTo(1);
+		assertThat(tracker.getLineDelimiter(2)).isNull();
 	}
 
 }
