@@ -36,23 +36,37 @@ public class DocumentText implements CharSequence {
 		this.text = text;
 	}
 
+	protected static DocumentText from(Text text) {
+		return new DocumentText(text);
+	}
+
     public DocumentText insert(int index, DocumentText documentText) {
-		text = text.insert(index, documentText.getText());
-		return this;
+		return from(text.insert(index, documentText.getText()));
 	}
 
 	public DocumentText delete(int start, int end) {
-		text.delete(start, end);
-		return this;
+		return from(text.delete(start, end));
 	}
 
     public DocumentText subtext(int start, int end) {
-		text = text.subtext(start, end);
-		return this;
+		return from(text.subtext(start, end));
+	}
+
+    public DocumentText substring(int start, int end) {
+		return from(text.subtext(start, end));
 	}
 
 	protected Text getText() {
 		return text;
+	}
+
+	public DocumentText[] splitFirst(char c) {
+		int i = text.indexOf(c);
+		if (i >= 0) {
+			return new DocumentText[] { from(text.subtext(0, i)), from(text.subtext(i + 1, text.length())) };
+		} else {
+			return new DocumentText[] { from(text) };
+		}
 	}
 
 	@Override
@@ -68,6 +82,11 @@ public class DocumentText implements CharSequence {
 	@Override
 	public CharSequence subSequence(int start, int end) {
 		return this.text.subSequence(start, end);
+	}
+
+	@Override
+	public String toString() {
+		return this.text.toString();
 	}
 
 }

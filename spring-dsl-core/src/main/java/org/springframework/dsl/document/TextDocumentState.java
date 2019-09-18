@@ -44,8 +44,8 @@ public class TextDocumentState {
 		return new TextDocument(uri, languageId, version, documentText.getText().toString());
 	}
 
-	public TextDocumentState(String xxx) {
-		this.documentText = new DocumentText(xxx);
+	public TextDocumentState(String content) {
+		this.documentText = new DocumentText(content);
 	}
 
 	public int toOffset(Position position) {
