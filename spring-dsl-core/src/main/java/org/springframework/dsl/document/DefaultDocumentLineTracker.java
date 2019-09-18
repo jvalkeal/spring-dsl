@@ -24,9 +24,9 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	public final static String[] DELIMITERS= { "\r", "\n", "\r\n" };
 	private static final boolean ASSERT = true;
 	private static final String NO_DELIM = "";
-	private Node fRoot = new Node(0, NO_DELIM);
+	private Node rootNode = new Node(0, NO_DELIM);
 
-	private DocumentText text = new DocumentText("");
+	// private DocumentText text = new DocumentText("");
 
 	@Override
 	public DocumentText[] getLegalLineDelimiters() {
@@ -54,7 +54,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 
 	@Override
 	public int getNumberOfLines() {
-		Node node = fRoot;
+		Node node = rootNode;
 		int lines = 0;
 		while (node != null) {
 			lines += node.line + 1;
@@ -95,7 +95,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	public Region getLineInformationOfOffset(int offset) {
 		// Inline nodeByOffset start as we need both node and offset
 		int remaining = offset;
-		Node node = fRoot;
+		Node node = rootNode;
 		final int lineOffset;
 
 		while (true) {
@@ -125,7 +125,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 			// Inline nodeByLine start
 			int remaining = line;
 			int offset = 0;
-			Node node = fRoot;
+			Node node = rootNode;
 
 			while (true) {
 				if (node == null) {
@@ -152,7 +152,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 				// Inline nodeByLine start
 				int remaining = line;
 				int offset = 0;
-				Node node = fRoot;
+				Node node = rootNode;
 
 				while (true) {
 					if (node == null) {
@@ -184,12 +184,13 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	@Override
 	public void replace(int offset, int length, DocumentText textx) {
 		String text = textx.toString();
-		if (ASSERT)
+		if (ASSERT) {
 			checkTree();
+		}
 
 		// Inlined nodeByOffset as we need both node and offset
 		int remaining = offset;
-		Node first = fRoot;
+		Node first = rootNode;
 		final int firstNodeOffset;
 
 		while (true) {
@@ -210,8 +211,9 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 			}
 		}
 		// Inline nodeByOffset end
-		if (ASSERT)
+		if (ASSERT) {
 			Assert.isTrue(first != null, "");
+		}
 
 		Node last;
 		if (offset + length < firstNodeOffset + first.length) {
@@ -219,8 +221,9 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 		} else {
 			last = nodeByOffset(offset + length);
 		}
-		if (ASSERT)
+		if (ASSERT) {
 			Assert.isTrue(last != null, "");
+		}
 
 		int firstLineDelta = firstNodeOffset + first.length - offset;
 		if (first == last) {
@@ -229,14 +232,14 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 			replaceFromTo(first, last, text, length, firstLineDelta);
 		}
 
-		if (ASSERT)
+		if (ASSERT) {
 			checkTree();
-
+		}
 	}
 
 	@Override
 	public void set(DocumentText text) {
-		this.text = text;
+		// this.text = text;
 	}
 
 	/**
@@ -248,19 +251,15 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * @throws BadLocationException if the line is invalid
 	 */
 	private Node nodeByLine(final int line) throws BadLocationException {
-		/*
-		 * Works for any binary search tree.
-		 */
 		int remaining = line;
-		Node node = fRoot;
-
+		Node node = rootNode;
 		while (true) {
 			if (node == null) {
 				fail(line);
 			}
-
-			if (remaining == node.line)
+			if (remaining == node.line) {
 				break;
+			}
 			if (remaining < node.line) {
 				node = node.left;
 			} else {
@@ -268,7 +267,6 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 				node = node.right;
 			}
 		}
-
 		return node;
 	}
 
@@ -281,21 +279,16 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * @throws BadLocationException if the line is invalid
 	 */
 	private int offsetByLine(final int line) throws BadLocationException {
-		/*
-		 * Works for any binary search tree.
-		 */
 		int remaining = line;
 		int offset = 0;
-		Node node = fRoot;
-
+		Node node = rootNode;
 		while (true) {
 			if (node == null) {
 				fail(line);
 			}
-
-			if (remaining == node.line)
+			if (remaining == node.line) {
 				return offset + node.offset;
-
+			}
 			if (remaining < node.line) {
 				node = node.left;
 			} else {
@@ -316,18 +309,13 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * @throws BadLocationException if the offset is invalid
 	 */
 	private int lineByOffset(final int offset) throws BadLocationException {
-		/*
-		 * Works for any binary search tree.
-		 */
 		int remaining = offset;
-		Node node = fRoot;
+		Node node = rootNode;
 		int line = 0;
-
 		while (true) {
 			if (node == null) {
 				fail(offset);
 			}
-
 			if (remaining < node.offset) {
 				node = node.left;
 			} else {
@@ -337,7 +325,6 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 					// last line
 					return line;
 				}
-
 				remaining -= node.length;
 				line++;
 				node = node.right;
@@ -348,10 +335,10 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	/**
 	 * Replace spanning from one node to another.
 	 *
-	 * @param node           the first affected node
-	 * @param last           the last affected node
-	 * @param text           the added text
-	 * @param length         the replace length, &gt;= <code>firstLineDelta</code>
+	 * @param node the first affected node
+	 * @param last the last affected node
+	 * @param text the added text
+	 * @param length the replace length, &gt;= <code>firstLineDelta</code>
 	 * @param firstLineDelta the number of characters removed from the replacement
 	 *                       offset to the end of <code>node</code>, &lt;=
 	 *                       <code>length</code>
@@ -399,8 +386,8 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * Joins two consecutive node lines, additionally adjusting the resulting length
 	 * of the combined line by <code>delta</code>. The first node gets deleted.
 	 *
-	 * @param one   the first node to join
-	 * @param two   the second node to join
+	 * @param one the first node to join
+	 * @param two the second node to join
 	 * @param delta the delta to apply to the remaining single node
 	 */
 	private void join(Node one, Node two, int delta) {
@@ -434,7 +421,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 		 * Works for any binary search tree.
 		 */
 		int remaining = offset;
-		Node node = fRoot;
+		Node node = rootNode;
 		while (true) {
 			if (node == null) {
 				fail(offset);
@@ -506,9 +493,9 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * Updates the differential indices following the parent chain. All nodes from
 	 * <code>from.parent</code> to the root are updated.
 	 *
-	 * @param node        the child of the first node to update
+	 * @param node the child of the first node to update
 	 * @param deltaLength the character delta
-	 * @param deltaLines  the line delta
+	 * @param deltaLines the line delta
 	 */
 	private void updateParentChain(Node node, int deltaLength, int deltaLines) {
 		updateParentChain(node, null, deltaLength, deltaLines);
@@ -518,10 +505,10 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * Updates the differential indices following the parent chain. All nodes from
 	 * <code>from.parent</code> to <code>to</code> (exclusive) are updated.
 	 *
-	 * @param from        the child of the first node to update
-	 * @param to          the first node not to update
+	 * @param from the child of the first node to update
+	 * @param to the first node not to update
 	 * @param deltaLength the character delta
-	 * @param deltaLines  the line delta
+	 * @param deltaLines the line delta
 	 */
 	private void updateParentChain(Node from, Node to, int deltaLength, int deltaLines) {
 		Node parent = from.parent;
@@ -540,10 +527,10 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * Helper method for moving a child, ensuring that parent pointers are set
 	 * correctly.
 	 *
-	 * @param parent      the new parent of <code>child</code>, <code>null</code> to
-	 *                    replace the root node
-	 * @param child       the new child of <code>parent</code>, may be
-	 *                    <code>null</code>
+	 * @param parent the new parent of <code>child</code>, <code>null</code> to
+	 *               replace the root node
+	 * @param child  the new child of <code>parent</code>, may be
+	 *               <code>null</code>
 	 * @param isLeftChild <code>true</code> if <code>child</code> shall become
 	 *                    <code>parent</code>'s left child, <code>false</code> if it
 	 *                    shall become <code>parent</code>'s right child
@@ -551,9 +538,9 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	private void setChild(Node parent, Node child, boolean isLeftChild) {
 		if (parent == null) {
 			if (child == null) {
-				fRoot = new Node(0, NO_DELIM);
+				rootNode = new Node(0, NO_DELIM);
 			} else {
-				fRoot = child;
+				rootNode = child;
 			}
 		} else {
 			if (isLeftChild) {
@@ -678,7 +665,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * A left rotation around <code>parent</code>, whose structural position is
 	 * replaced by <code>node</code>.
 	 *
-	 * @param node   the node moving up and left
+	 * @param node the node moving up and left
 	 * @param parent the node moving left and down
 	 */
 	private void singleLeftRotation(Node node, Node parent) {
@@ -691,7 +678,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * A right rotation around <code>parent</code>, whose structural position is
 	 * replaced by <code>node</code>.
 	 *
-	 * @param node   the node moving up and right
+	 * @param node the node moving up and right
 	 * @param parent the node moving right and down
 	 */
 	private void singleRightRotation(Node node, Node parent) {
@@ -704,7 +691,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * A double left rotation, first rotating right around <code>node</code>, then
 	 * left around <code>parent</code>.
 	 *
-	 * @param node   the node that will be rotated right
+	 * @param node the node that will be rotated right
 	 * @param parent the node moving left and down
 	 */
 	private void rightLeftRotation(Node node, Node parent) {
@@ -729,7 +716,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * A double right rotation, first rotating left around <code>node</code>, then
 	 * right around <code>parent</code>.
 	 *
-	 * @param node   the node that will be rotated left
+	 * @param node the node that will be rotated left
 	 * @param parent the node moving right and down
 	 */
 	private void leftRightRotation(Node node, Node parent) {
@@ -841,7 +828,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	/**
 	 * Updates the balance information in the parent chain of node.
 	 *
-	 * @param node         the first node that needs balance updating
+	 * @param node the first node that needs balance updating
 	 * @param wasLeftChild <code>true</code> if the deletion happened on
 	 *                     <code>node</code>'s left subtree, <code>false</code> if
 	 *                     it occurred on <code>node</code>'s right subtree
@@ -1051,8 +1038,8 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	/**
 	 * Inserts a line with the given length and delimiter after <code>node</code>.
 	 *
-	 * @param node      the predecessor of the inserted node
-	 * @param length    the line length of the inserted node
+	 * @param node the predecessor of the inserted node
+	 * @param length the line length of the inserted node
 	 * @param delimiter the delimiter of the inserted node
 	 * @return the inserted node
 	 */
@@ -1081,9 +1068,9 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	/**
 	 * Replace happening inside a single line.
 	 *
-	 * @param node           the affected node
-	 * @param text           the added text
-	 * @param length         the replace length, &lt; <code>firstLineDelta</code>
+	 * @param node the affected node
+	 * @param text the added text
+	 * @param length the replace length, &lt; <code>firstLineDelta</code>
 	 * @param firstLineDelta the number of characters from the replacement offset to
 	 *                       the end of <code>node</code> &gt; <code>length</code>
 	 */
@@ -1122,7 +1109,6 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 			insertAfter(node, remainder + text.length() - consumed, remDelim);
 		}
 	}
-
 
 	/**
 	 * A node represents one line. Its character and line offsets are 0-based and
@@ -1207,7 +1193,7 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	}
 
 	private void checkTree() {
-		checkTreeStructure(fRoot);
+		checkTreeStructure(rootNode);
 
 		try {
 			checkTreeOffsets(nodeByOffset(0), new int[] { 0, 0 }, null);
@@ -1227,13 +1213,11 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 		if (node == null) {
 			return 0;
 		}
-
 		byte leftDepth = checkTreeStructure(node.left);
 		byte rightDepth = checkTreeStructure(node.right);
 		Assert.isTrue(node.balance == rightDepth - leftDepth, "");
 		Assert.isTrue(node.left == null || node.left.parent == node, "");
 		Assert.isTrue(node.right == null || node.right.parent == node, "");
-
 		return (byte) (Math.max(rightDepth, leftDepth) + 1);
 	}
 
@@ -1241,11 +1225,11 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 	 * Debug-only method that checks the differential offsets of the tree, starting
 	 * at <code>node</code> and continuing until <code>last</code>.
 	 *
-	 * @param node   the first <code>Node</code> to check, may be <code>null</code>
+	 * @param node the first <code>Node</code> to check, may be <code>null</code>
 	 * @param offLen an array of length 2, with <code>offLen[0]</code> the expected
 	 *               offset of <code>node</code> and <code>offLen[1]</code> the
 	 *               expected line of <code>node</code>
-	 * @param last   the last <code>Node</code> to check, may be <code>null</code>
+	 * @param last the last <code>Node</code> to check, may be <code>null</code>
 	 * @return an <code>int[]</code> of length 2, with the first element being the
 	 *         character length of <code>node</code>'s subtree, and the second
 	 *         element the number of lines in <code>node</code>'s subtree
@@ -1254,19 +1238,15 @@ public class DefaultDocumentLineTracker implements DocumentLineTracker {
 		if (node == last) {
 			return offLen;
 		}
-
 		Assert.isTrue(node.offset == offLen[0], "");
 		Assert.isTrue(node.line == offLen[1], "");
-
 		if (node.right != null) {
 			int[] result = checkTreeOffsets(successorDown(node.right), new int[2], node);
 			offLen[0] += result[0];
 			offLen[1] += result[1];
 		}
-
 		offLen[0] += node.length;
 		offLen[1]++;
 		return checkTreeOffsets(node.parent, offLen, last);
 	}
-
 }
