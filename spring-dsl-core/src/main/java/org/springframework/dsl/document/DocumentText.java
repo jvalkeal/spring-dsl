@@ -56,6 +56,8 @@ public class DocumentText implements CharSequence {
 		return from(text.subtext(start, end));
 	}
 
+
+
 	protected Text getText() {
 		return text;
 	}

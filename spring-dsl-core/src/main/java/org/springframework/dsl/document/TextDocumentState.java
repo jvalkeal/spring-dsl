@@ -29,7 +29,8 @@ import org.springframework.dsl.model.LanguageId;
 public class TextDocumentState {
 
 	private static final Logger log = LoggerFactory.getLogger(TextDocumentState.class);
-	private LineTracker lineTracker = new DefaultLineTracker();
+	// private LineTracker lineTracker = new DefaultLineTracker();
+	private DocumentLineTracker lineTracker = new DefaultDocumentLineTracker();
 	private DocumentText documentText;
 	private LanguageId languageId;
 	private String uri;
@@ -64,7 +65,8 @@ public class TextDocumentState {
 
 	public synchronized void setText(String content) {
 		documentText = new DocumentText(content);
-		lineTracker.set(content);
+		// lineTracker.set(content);
+		lineTracker.set(documentText);
 	}
 
 	public synchronized void replace(int start, int len, String ins) {
@@ -72,7 +74,8 @@ public class TextDocumentState {
 		documentText = documentText
 			.delete(start, end)
 			.insert(start, new DocumentText(ins));
-		lineTracker.replace(start, len, ins);
+		// lineTracker.replace(start, len, ins);
+		lineTracker.replace(start, len, new DocumentText(ins));
 	}
 
 	private void apply(TextDocumentContentChangeEvent change) {
